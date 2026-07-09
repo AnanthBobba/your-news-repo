@@ -131,12 +131,29 @@ def fetch_company(company_name):
     for attempt in range(MAX_RETRIES):
         try:
             profile = random.choice(IMPERSONATE_PROFILES)
-            r = cffi.get(
-                url,
-                headers=build_headers(),
-                impersonate=profile,
-                timeout=REQUEST_TIMEOUT,
-            )
+            try:
+                r = cffi.get(
+                    url,
+                    headers=build_headers(),
+                    impersonate=profile,
+                    timeout=REQUEST_TIMEOUT,
+                )
+            except Exception as e:
+                # Fallback to generic "chrome" if a specific profile is unsupported
+                if "impersonate" in type(e).__name__.lower():
+                    try:
+                        r = cffi.get(
+                            url,
+                            headers=build_headers(),
+                            impersonate="chrome",
+                            timeout=REQUEST_TIMEOUT,
+                        )
+                    except Exception as ee:
+                        log(f"  ! Fallback also failed for '{company_name[:30]}': {type(ee).__name__}")
+                        time.sleep((2 ** attempt) + random.uniform(1, 3))
+                        continue
+                else:
+                    raise
             body = r.text or ""
 
             if r.status_code == 429 or is_block_page(body):
