@@ -2,26 +2,21 @@ name: Daily Company News (Google RSS)
 
 on:
   schedule:
-    - cron: '30 19 * * *'   # 19:30 UTC = 01:00 IST daily
+    - cron: '30 19 * * *'
+  workflow_dispatch:
 
-# Cancel duplicate runs
 concurrency:
   group: daily-news
   cancel-in-progress: false
 
 jobs:
-
-  # ─────────────────────────────────────────────
-  # STAGE 1: Fan out 10 parallel workers
-  # Each worker gets a fixed chunk of companies
-  # ─────────────────────────────────────────────
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 300              # 5h safety net
+    timeout-minutes: 300
     strategy:
-      fail-fast: false                # one failure doesn't kill others
+      fail-fast: false
       matrix:
-        chunk: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]   # 10 parallel jobs
+        chunk: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     steps:
       - uses: actions/checkout@v4
 
@@ -36,24 +31,22 @@ jobs:
       - name: Fetch RSS for chunk ${{ matrix.chunk }}
         env:
           CHUNK_INDEX: ${{ matrix.chunk }}
-          TOTAL_CHUNKS: 10
+          TOTAL_CHUNKS: "10"
         run: python scripts/fetch_worker.py
 
       - name: Upload chunk results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: news-chunk-${{ matrix.chunk }}
           path: output/chunk_${{ matrix.chunk }}.csv
-          retention-days: 1           # auto-delete next day
+          retention-days: 1
           if-no-files-found: warn
 
-  # ─────────────────────────────────────────────
-  # STAGE 2: Merge all chunks and email
-  # ─────────────────────────────────────────────
   merge_and_send:
     needs: fetch
     runs-on: ubuntu-latest
-    if: always()                      # run even if some chunks failed
+    if: always()
     steps:
       - uses: actions/checkout@v4
 
@@ -70,13 +63,12 @@ jobs:
         with:
           path: chunks/
           pattern: news-chunk-*
-          merge-multiple: false
 
       - name: Merge, build Excel & email
         env:
-          GMAIL_FROM:         ${{ secrets.GMAIL_FROM }}
+          GMAIL_FROM: ${{ secrets.GMAIL_FROM }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          EMAIL_TO:           ${{ secrets.EMAIL_TO }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
         run: python scripts/merge_and_email.py
 
       - name: Delete artifacts (cleanup)
