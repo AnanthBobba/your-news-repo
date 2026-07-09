@@ -34,9 +34,14 @@ REQUEST_TIMEOUT      = 20
 IST = timezone(timedelta(hours=5, minutes=30))
 
 IMPERSONATE_PROFILES = [
-    "chrome124", "chrome123", "chrome120",
-    "safari17_2", "safari17_0", "edge101",
+    "chrome",       # generic alias → always latest supported Chrome
+    "chrome131",
+    "chrome124",
+    "chrome120",
+    "safari",       # generic alias → always latest supported Safari
+    "edge101",
 ]
+
 ACCEPT_LANGS = [
     "en-IN,en-US;q=0.9,en;q=0.8",
     "en-GB,en;q=0.9",
