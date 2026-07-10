@@ -22,7 +22,7 @@ COMPANY_FILE = "data/CompanyList.xlsx"
 OUT_DIR      = "output"
 OUT_FILE     = f"{OUT_DIR}/chunk_{CHUNK_INDEX}.csv"
 
-ARTICLES_PER_COMPANY = 10
+ARTICLES_PER_COMPANY = 15
 MIN_DELAY_SEC        = 8
 MAX_DELAY_SEC        = 15
 MAX_RETRIES          = 3
@@ -30,7 +30,7 @@ CIRCUIT_BLOCK_LIMIT  = 5
 CIRCUIT_WINDOW_SEC   = 180
 CIRCUIT_COOLDOWN_SEC = 900
 REQUEST_TIMEOUT      = 20
-LOOKBACK_WINDOW      = "7d"   # Google News time filter: 1d, 7d, 1m, etc.
+LOOKBACK_WINDOW      = "1d"   # Google News time filter: 1d, 7d, 1m, etc.
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
